@@ -1,5 +1,5 @@
-# discord-js-v13-24-7-radio-example
-Discord.Js v13 24/7 Radio Example
+# discord-js-v13-24-7-radio
+Discord.Js v13 24/7 Radio example
 
 **Installation**
 
