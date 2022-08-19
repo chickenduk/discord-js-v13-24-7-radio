@@ -9,7 +9,7 @@ Node v16.9.0 or higher.
 npm install discord.js
 npm install @discordjs/voice
 npm install @discordjs/opus
-npm install ytdl-core
+npm install play-dl
 npm install ffmpeg-static
 npm install sodium
 
