@@ -1,62 +1,47 @@
-const Discord = require('discord.js');
-const ytdl = require('ytdl-core');
-const {
-	NoSubscriberBehavior,
-	StreamType,
-	createAudioPlayer,
-	createAudioResource,
-	entersState,
-	AudioPlayerStatus,
-	VoiceConnectionStatus,
-	joinVoiceChannel,
-} = require('@discordjs/voice');
-
-async function connectToChannel(channel) {
-	const connection = joinVoiceChannel({
-		channelId: channel.id,
-		guildId: channel.guild.id,
-		adapterCreator: channel.guild.voiceAdapterCreator,
-	});
-	try {
-		await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
-		return connection;
-	} catch (error) {
-		connection.destroy();
-		throw error;
-	}
-}
-
+const Discord = require('discord.js')
+const { createAudioPlayer, createAudioResource , StreamType, demuxProbe, joinVoiceChannel, NoSubscriberBehavior, AudioPlayerStatus, VoiceConnectionStatus, getVoiceConnection } = require('@discordjs/voice')
+const play = require('play-dl')
 const client = new Discord.Client({ intents: [
   Discord.GatewayIntentBits.Guilds,
-  Discord.GatewayIntentBits.GuildMessages,
   Discord.GatewayIntentBits.GuildVoiceStates
 ]});
-
 client.on('ready', async () => {
-	console.log('Discord.js client is ready!');
-	
-	let guild = client.guilds.cache.get('XXXXXXXXXXXXXXXXXX');
-	const voiceChannel = guild.channels.cache.get('XXXXXXXXXXXXXXXXXX');
-	
-	function play (voiceChannel) {
-		connectToChannel(voiceChannel).then(connection => {			
-			const player = createAudioPlayer();
-			const resource = createAudioResource( ytdl('https://www.youtube.com/watch?v=PRvOb70lfGs', {quality: "highestaudio", highWaterMark: 1 << 25 }), { inlineVolume: true } );
+		async function radiostream () {
+			let guild = client.guilds.cache.get('XXXXXXXXXXXXXXXXXX');
+			const voiceChannel = guild.channels.cache.get('XXXXXXXXXXXXXXXXXX');
+			
+			const connection = joinVoiceChannel({
+				channelId: voiceChannel.id,
+				guildId: voiceChannel.guild.id,
+				adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+			})
 
-			player.play(resource);
-			connection.subscribe(player);
+			let stream = await play.stream('https://www.youtube.com/watch?v=XXXXXXXXXXX')
+
+			let resource = createAudioResource(stream.stream, {
+				inputType: stream.type
+			})
+
+			let player = createAudioPlayer({
+				behaviors: {
+					noSubscriber: NoSubscriberBehavior.Play
+				}
+			})
+			
+			player.play(resource)
 			
 			player.on('error', error => {
-				play(voiceChannel);
+				radiostream();
 			});
 			
 			player.on(AudioPlayerStatus.Idle, () => {
-				play(voiceChannel);
+				radiostream();
 			});
-		}).catch(err => play(voiceChannel)); 
-	}
 
-	play(voiceChannel);
-});
+			connection.subscribe(player)
+		}
+		
+		radiostream();
+})
 
-void client.login('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+client.login('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
