@@ -5,11 +5,12 @@ const client = new Discord.Client({ intents: [
   Discord.GatewayIntentBits.Guilds,
   Discord.GatewayIntentBits.GuildVoiceStates
 ]});
+
 client.on('ready', async () => {
-		async function radiostream () {
+		function radiostream () {
 			let guild = client.guilds.cache.get('XXXXXXXXXXXXXXXXXX');
 			const voiceChannel = guild.channels.cache.get('XXXXXXXXXXXXXXXXXX');
-			
+
 			const connection = joinVoiceChannel({
 				channelId: voiceChannel.id,
 				guildId: voiceChannel.guild.id,
@@ -22,25 +23,27 @@ client.on('ready', async () => {
 				inputType: stream.type
 			})
 
-			let player = createAudioPlayer({
-				behaviors: {
-					noSubscriber: NoSubscriberBehavior.Play
-				}
-			})
-			
+			let player = createAudioPlayer()
+
 			player.play(resource)
-			
+
 			player.on('error', error => {
 				radiostream();
 			});
-			
+
 			player.on(AudioPlayerStatus.Idle, () => {
 				radiostream();
 			});
 
 			connection.subscribe(player)
+
+			connection.on('stateChange', (old_state, new_state) => {
+				if (old_state.status === VoiceConnectionStatus.Ready && new_state.status === VoiceConnectionStatus.Connecting) {
+					connection.configureNetworking();
+				}
+			})
 		}
-		
+
 		radiostream();
 })
 
