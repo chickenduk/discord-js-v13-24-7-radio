@@ -36,12 +36,6 @@ client.on('ready', async () => {
 			});
 
 			connection.subscribe(player)
-
-			connection.on('stateChange', (old_state, new_state) => {
-				if (old_state.status === VoiceConnectionStatus.Ready && new_state.status === VoiceConnectionStatus.Connecting) {
-					connection.configureNetworking();
-				}
-			})
 		}
 
 		radiostream();
